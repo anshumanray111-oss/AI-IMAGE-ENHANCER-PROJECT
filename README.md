@@ -1,95 +1,160 @@
 # ✨ AI Image Enhancer
 
-A modern, responsive web app that upscales and enhances images using the **Picsart AI API** — with an automatic **free offline fallback** powered by HTML5 Canvas. Zero dependencies, zero build steps.
+A modern, responsive web application that enhances and upscales images using the Picsart AI API, with a free offline fallback powered by HTML5 Canvas.
 
-![GitHub stars](https://img.shields.io/github/stars/yourusername/ai-image-enhancer?style=social)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![HTML](https://img.shields.io/badge/built%20with-HTML%2FCSS%2FJS-orange)
+The application provides an easy-to-use interface for uploading images, choosing an upscale factor, comparing the original and enhanced images, and downloading the result.
 
 ---
 
-## 🚀 Live Demo
+## 🚀 Features
 
-> Host it free on GitHub Pages — see [Getting Started](#getting-started) below.
-
----
-
-## ✨ Features
-
-- **AI Upscaling (2×, 4×, 8×)** via the Picsart Upscale API
-- **Interactive Before/After Slider** — drag to compare original vs enhanced
-- **Free Offline Fallback** — works without any API key using progressive Canvas upscaling
-- **Dark / Light Mode** — persisted across sessions
-- **Clipboard Paste** — paste images directly with Ctrl+V / ⌘V
-- **Sample Presets** — try it instantly with built-in demo images
-- **Image Stats** — dimensions and mode displayed after enhancement
-- **Copy to Clipboard** — copy the enhanced image with one click
-- **Direct Download** — lossless PNG download
-- **Zero Dependencies** — pure HTML, CSS, and Vanilla JS
+- ✨ AI image upscaling using the Picsart Upscale API
+- 🔍 Supports 2x, 4x, and 8x upscaling
+- ↔️ Interactive Before/After comparison slider
+- 🆓 Free offline fallback when an API key is unavailable
+- 🌙 Dark / Light mode
+- 📤 Drag-and-drop image upload
+- 📋 Paste images directly from the clipboard
+- 🖼️ Built-in sample images for quick testing
+- 📐 Displays image dimensions and enhancement information
+- 📋 Copy enhanced image to clipboard
+- ⬇️ Download enhanced images as PNG
+- ⚡ Zero dependencies and no build process required
+- 📱 Responsive and modern user interface
 
 ---
 
-## 🛠️ Getting Started
+## 🛠️ Technologies Used
+
+- **HTML5**
+- **CSS3**
+- **JavaScript (Vanilla JS)**
+- **HTML5 Canvas**
+- **Picsart AI API**
+
+---
+
+## 📸 Screenshots
+
+### Main Interface
+
+![AI Image Enhancer - Main Interface](SCREENSHOTS/main-Interface.png)
+
+### Before & After Comparison
+
+![AI Image Enhancer - Before and After](SCREENSHOTS/before-after.png)
+---
+
+## ▶️ Getting Started
 
 ### Run Locally
 
-Just open `index.html` in any modern browser — no install required.
+No installation or build process is required.
 
-Or serve it locally:
+1. Clone the repository:
 
-```bash
-# Python 3
-python -m http.server 8000
+    git clone https://github.com/anshumanray111-oss/AI-IMAGE-ENHANCER-PROJECT.git
 
-# Node.js (npx)
-npx serve .
-```
+2. Open the project folder.
 
-Then visit `http://localhost:8000`.
+3. Open `index.html` in a modern web browser.
 
-### (Optional) Add Your Picsart API Key
+That's it!
 
-1. Get a free API key at [picsart.io/developers](https://picsart.io/developers)
-2. Paste it into the API Key field on the page, **or** set `DEFAULT_API_KEY` inside `index.html`:
+### Run Using a Local Server
 
-```js
-const DEFAULT_API_KEY = "your-key-here";
-```
+You can also run the project using a local development server.
 
-> ⚠️ Use your **API Key**, not an OAuth access token — a token will cause an auth error.
+#### Python
 
-No key? No problem — the app falls back to the free offline upscaler automatically.
+    python -m http.server 8000
+
+Then open:
+
+    http://localhost:8000
+
+#### Node.js
+
+    npx serve .
 
 ---
 
-## 🌐 Deploy to GitHub Pages (Free)
+## 🔑 Picsart API
 
-1. Push this repo to GitHub
-2. Go to **Settings → Pages**
-3. Under **Build and deployment → Source**, select **Deploy from a branch**
-4. Choose branch: `main`, folder: `/ (root)`
-5. Click **Save** — your site will be live in ~1 minute
+The application can use the **Picsart AI API** for image enhancement and upscaling.
+
+Get a Picsart API key from:
+
+https://picsart.io/developers
+
+### Using the API Key
+
+1. Get your Picsart API key.
+2. Open the application.
+3. Paste the API key into the **Picsart API Key** field.
+4. Select the desired upscale factor.
+5. Click **Enhance Image**.
+
+> ⚠️ **Important:** Use your Picsart **API Key**, not an OAuth access token.
+
+### No API Key?
+
+No problem.
+
+The application automatically falls back to a **free offline upscaler** using HTML5 Canvas when an API key is not provided or the API cannot be used.
+
+---
+
+## 🌐 Deploy to GitHub Pages
+
+This project can be deployed for free using GitHub Pages.
+
+1. Push the project to GitHub.
+2. Open the repository **Settings**.
+3. Select **Pages**.
+4. Under **Build and deployment**, select:
+   - **Source:** Deploy from a branch
+   - **Branch:** `main`
+   - **Folder:** `/ (root)`
+5. Click **Save**.
+
+After GitHub Pages finishes deploying, your application will be available through your GitHub Pages URL.
 
 ---
 
 ## 📁 Project Structure
 
-```
-ai-image-enhancer/
-├── index.html      # The entire app (self-contained)
-├── README.md
-├── .gitignore
-└── LICENSE
-```
+    AI-IMAGE-ENHANCER-PROJECT/
+    ├── index.html
+    ├── README.md
+    ├── .gitignore
+    ├── .gitattributes
+    └── LICENSE
 
 ---
 
 ## 🔒 Privacy
 
-Images are sent to the Picsart API for processing (when a key is provided) and are never stored on your device. When using the offline fallback, all processing happens entirely in your browser — no data leaves your machine.
+When the Picsart API is used, the selected image is sent to the Picsart API for processing.
+
+When the offline fallback is used, image processing happens directly in the browser.
+
+Please avoid uploading sensitive or private images when using third-party API services.
 
 ---
 
 ## 📄 License
 
-MIT — free to use, modify, and distribute.
+This project is licensed under the **MIT License**.
+
+---
+
+## 👨‍💻 Author
+
+**Anshuman Ray**
+
+GitHub:
+
+https://github.com/anshumanray111-oss
+
+[def]: SCREENSHOTS/main-Interface.png
