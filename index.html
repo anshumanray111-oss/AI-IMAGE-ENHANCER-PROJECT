@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Image Enhancer | Picsart Upscale</title>
+  <style>
+    /* ============ Reset & Base ============ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #eef2ff;
+      --accent: #0ea5e9;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface2: #f8fafc;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --shadow: 0 10px 25px -5px rgba(15,23,42,.08), 0 8px 10px -6px rgba(15,23,42,.04);
+      --radius: 16px;
+      --transition: .2s ease;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #0f172a;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --primary-light: #1e1b4b;
+      --danger-bg: #450a0a;
+      --success-bg: #052e16;
+      --shadow: 0 10px 25px -5px rgba(0,0,0,.4), 0 8px 10px -6px rgba(0,0,0,.3);
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    [data-theme="light"] body {
+      background:
+        radial-gradient(900px 400px at 10% -10%, #e0e7ff 0%, transparent 60%),
+        radial-gradient(800px 400px at 110% 10%, #e0f2fe 0%, transparent 55%),
+        var(--bg);
+    }
+
+    /* ============ Layout ============ */
+    .page { max-width: 1100px; margin: 0 auto; padding: 40px 20px 64px; }
+
+    /* ============ Header ============ */
+    .page-head-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .page-head { text-align: left; flex: 1; }
+    .page-head .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .page-head .logo .spark { filter: drop-shadow(0 2px 6px rgba(79,70,229,.45)); }
+    .page-head p { color: var(--text-muted); font-size: 1rem; max-width: 560px; }
+
+    /* Theme toggle */
+    .theme-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 8px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+      transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .theme-btn:hover { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.12); }
+
+    /* ============ Cards ============ */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 28px;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      color: var(--text);
+    }
+    .card-title .step {
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700;
+    }
+
+    /* ============ Sample Images ============ */
+    .samples-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+    .samples-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .sample-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 6px 12px;
+      font-size: 0.83rem; font-weight: 500; cursor: pointer;
+      color: var(--text-muted);
+      transition: border-color .15s, background .15s, color .15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .sample-btn:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+    /* ============ Dropzone ============ */
+    .dropzone {
+      border: 2px dashed var(--border); border-radius: 12px;
+      padding: 36px 20px; text-align: center; cursor: pointer;
+      transition: border-color .18s, background .18s;
+      background: var(--surface2);
+    }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--primary); background: var(--primary-light); }
+    .paste-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; }
+    .dropzone .dz-icon { font-size: 2.6rem; margin-bottom: 10px; }
+    .dropzone .dz-main { font-weight: 600; font-size: 1.05rem; }
+    .dropzone .dz-sub { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+    .dropzone input[type="file"] { display: none; }
+
+    .file-preview { display: none; align-items: center; gap: 14px; text-align: left; }
+    .file-preview.show { display: flex; }
+    .file-preview img {
+      width: 56px; height: 56px; object-fit: cover; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface2);
+    }
+    .file-preview .fp-name { font-weight: 600; word-break: break-all; }
+    .file-preview .fp-meta { color: var(--text-muted); font-size: 0.85rem; }
+    .file-preview .btn-ghost { margin-left: auto; }
+
+    /* ============ Controls ============ */
+    .controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-top: 20px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .field .key-help {
+      font-size: 0.82rem; color: var(--primary); text-decoration: none;
+      font-weight: 500; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .field .key-help:hover { text-decoration: underline; }
+    .field .key-tip {
+      font-size: 0.82rem; color: #b45309;
+      background: #fffbeb; border: 1px solid #fde68a;
+      border-radius: 8px; padding: 6px 10px; line-height: 1.4;
+    }
+    [data-theme="dark"] .field .key-tip { background: #1c1a00; border-color: #713f12; color: #fbbf24; }
+    .field.input-key { flex: 1 1 260px; }
+    .field.input-factor { flex: 0 0 150px; }
+
+    .key-wrap { position: relative; display: flex; }
+    .key-wrap input { padding-right: 44px; }
+    .key-toggle {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; font-size: 1.1rem;
+      color: var(--text-muted); padding: 4px;
+    }
+
+    input[type="text"], input[type="password"], select {
+      width: 100%; padding: 11px 14px;
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 0.95rem; font-family: inherit;
+      background: var(--surface); color: var(--text);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus, select:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+    }
+
+    /* ============ Buttons ============ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: none; cursor: pointer; font-family: inherit;
+      font-size: 0.95rem; font-weight: 600; padding: 12px 22px; border-radius: 10px;
+      transition: transform .12s, box-shadow .12s, background .15s, opacity .15s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; box-shadow: 0 4px 14px rgba(79,70,229,.35); min-width: 180px;
+    }
+    .btn-primary:not(:disabled):hover { box-shadow: 0 6px 18px rgba(79,70,229,.5); transform: translateY(-1px); }
+
+    .btn-success {
+      background: var(--success); color: #fff;
+      box-shadow: 0 4px 14px rgba(22,163,74,.3);
+    }
+    .btn-success:not(:disabled):hover { box-shadow: 0 6px 18px rgba(22,163,74,.4); transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: transparent; color: var(--primary);
+      border: 1px solid var(--primary); padding: 6px 14px;
+      font-size: 0.85rem; border-radius: 8px;
+    }
+    .btn-ghost:hover { background: var(--primary-light); }
+
+    .btn-icon {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem;
+    }
+    .btn-icon:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+    .offline-note {
+      margin-top: 14px; font-size: 0.85rem; color: var(--text-muted);
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; line-height: 1.5;
+    }
+    .offline-note strong { color: var(--text); }
+
+    /* ============ Alert / Spinner ============ */
+    .alert {
+      display: none; padding: 13px 16px; border-radius: 10px;
+      font-size: 0.92rem; margin-top: 18px; border: 1px solid transparent;
+    }
+    .alert.show { display: flex; align-items: flex-start; gap: 8px; }
+    .alert.error { background: var(--danger-bg); color: var(--danger); border-color: #fecaca; }
+    .alert.info  { background: var(--success-bg); color: var(--success); border-color: #bbf7d0; }
+
+    .spinner-wrap { display: none; }
+    .spinner-wrap.show { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 20px; }
+    .spinner {
+      width: 42px; height: 42px;
+      border: 4px solid var(--primary-light); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-text { color: var(--text-muted); font-size: 0.92rem; font-weight: 500; }
+
+    /* ============ Stats Bar ============ */
+    .stats-bar { display: none; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stats-bar.show { display: flex; }
+    .stat-pill {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 50px; padding: 6px 14px;
+      font-size: 0.82rem; font-weight: 600; color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .stat-pill .stat-val { color: var(--text); }
+
+    /* ============ View Tabs ============ */
+    .view-tabs {
+      display: flex; gap: 8px; margin-bottom: 18px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 6px; width: fit-content;
+    }
+    .view-tab {
+      padding: 7px 16px; border-radius: 8px; border: none;
+      background: transparent; font-family: inherit;
+      font-size: 0.88rem; font-weight: 600; color: var(--text-muted); cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .view-tab.active {
+      background: var(--surface); color: var(--primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    /* ============ Side-by-side ============ */
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; --ar: 1 / 1; }
+    .result-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+    .result-card .rc-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      font-weight: 600; font-size: 0.95rem;
+    }
+    .rc-head-actions { display: flex; gap: 8px; align-items: center; }
+    .result-card .rc-head .badge {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; padding: 3px 10px; border-radius: 999px;
+    }
+    .badge.original { background: var(--bg); color: var(--text-muted); }
+    [data-theme="dark"] .badge.original { background: #334155; }
+    .badge.enhanced { background: #dbeafe; color: #1d4ed8; }
+    [data-theme="dark"] .badge.enhanced { background: #1e3a5f; color: #60a5fa; }
+
+    .image-box {
+      width: 100%; aspect-ratio: var(--ar, 1 / 1);
+      background: var(--surface2); position: relative;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .image-box img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: contain; opacity: 0; transition: opacity .3s;
+    }
+    .image-box img.loaded { opacity: 1; }
+
+    .placeholder {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; color: #94a3b8; padding: 24px; text-align: center; height: 100%;
+    }
+    .placeholder .pl-icon { font-size: 2.4rem; opacity: 0.7; }
+    .placeholder .pl-text { font-size: 0.95rem; font-weight: 600; }
+    .placeholder .pl-sub { font-size: 0.82rem; }
+
+    .result-card .rc-foot { padding: 14px 18px; border-top: 1px solid var(--border); }
+    .result-card .rc-foot .meta { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 10px; }
+
+    #downloadBtn { display: none; width: 100%; }
+    #downloadBtn.show { display: inline-flex; animation: fadeIn .35s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+    /* ============ Before/After Slider ============ */
+    #sliderView { display: none; }
+    #sliderView.show { display: block; }
+
+    .slider-container {
+      position: relative; border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      cursor: ew-resize; user-select: none; background: var(--surface2);
+    }
+    .slider-container img { display: block; width: 100%; height: auto; max-height: 600px; object-fit: contain; }
+    .slider-enhanced-wrap {
+      position: absolute; inset: 0; overflow: hidden; width: 50%;
+    }
+    .slider-enhanced-wrap img {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; object-fit: contain; max-height: none;
+    }
+    .slider-line {
+      position: absolute; top: 0; bottom: 0; left: 50%;
+      width: 3px; background: #fff;
+      box-shadow: 0 0 8px rgba(0,0,0,.4);
+      transform: translateX(-50%); pointer-events: none;
+    }
+    .slider-handle {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px; height: 44px; border-radius: 50%;
+      background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; pointer-events: none;
+    }
+    .slider-labels {
+      display: flex; justify-content: space-between;
+      padding: 10px 14px 0;
+      font-size: 0.82rem; font-weight: 600; color: var(--text-muted);
+    }
+
+    footer.page-foot { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; }
+    footer.page-foot a { color: var(--primary); text-decoration: none; }
+    footer.page-foot a:hover { text-decoration: underline; }
+
+    /* ============ Toast ============ */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e293b; color: #f1f5f9;
+      padding: 10px 20px; border-radius: 50px;
+      font-size: 0.88rem; font-weight: 600;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s; z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ============ Responsive ============ */
+    @media (max-width: 820px) {
+      .result-grid { grid-template-columns: 1fr; }
+      .page { padding: 24px 14px 48px; }
+      .btn-primary { min-width: 0; width: 100%; }
+      .field.input-factor { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <div class="page-head-row">
+      <header class="page-head">
+        <div class="logo"><span class="spark">✨</span> AI Image Enhancer</div>
+        <p>Upload any image and upscale it with the Picsart AI API. Use the interactive Before/After slider to compare results.</p>
+      </header>
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">🌙 Dark Mode</button>
+    </div>
+
+    <!-- Step 1 -->
+    <section class="card">
+      <div class="card-title"><span class="step">1</span> Choose an image &amp; configure</div>
+
+      <div class="samples-label">Try a sample image:</div>
+      <div class="samples-row" id="samplesRow">
+        <button class="sample-btn" data-url="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80" data-name="mountain.jpg">🏔️ Mountain</button>
+        <button class="sample-btn" data-url="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&q=80" data-name="cat.jpg">🐱 Cat</button>
+        <button class="sample-btn" data-url="https://images.unsplash.com/photo-1461988320302-91bde64fc8e4?w=400&q=80" data-name="portrait.jpg">👤 Portrait</button>
+        <button class="sample-btn" data-url="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80" data-name="city.jpg">🌆 City</button>
+      </div>
+
+      <!-- Dropzone -->
+      <div class="dropzone" id="dropzone">
+        <div id="dzEmpty">
+          <div class="dz-icon">🖼️</div>
+          <div class="dz-main">Drag &amp; drop an image here, or click to browse</div>
+          <div class="dz-sub">JPG, PNG, WEBP · max 10 MB</div>
+          <div class="paste-hint">💡 You can also paste an image with Ctrl+V / ⌘V</div>
+        </div>
+        <div class="file-preview" id="filePreview">
+          <img id="previewThumb" alt="Selected image preview" />
+          <div>
+            <div class="fp-name" id="fileName">—</div>
+            <div class="fp-meta" id="fileMeta">—</div>
+          </div>
+          <button type="button" class="btn btn-ghost" id="changeBtn">Change</button>
+        </div>
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff" />
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="field input-key">
+          <label for="apiKey">Picsart API Key</label>
+          <div class="key-wrap">
+            <input type="password" id="apiKey" placeholder="Paste your Picsart API Key here…" />
+            <button type="button" class="key-toggle" id="keyToggle" title="Show/hide key">👁️</button>
+          </div>
+          <a class="key-help" href="https://picsart.io/developers" target="_blank" rel="noopener">Need a key? Get one free on picsart.io ↗</a>
+          <div class="key-tip">⚠️ Use your <strong>API Key</strong>, not the OAuth access token.</div>
+        </div>
+        <div class="field input-factor">
+          <label for="factor">Upscale factor</label>
+          <select id="factor">
+            <option value="2" selected>2×</option>
+            <option value="4">4×</option>
+            <option value="8">8×</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" id="enhanceBtn" disabled>
+          <span>✨</span> Enhance Image
+        </button>
+      </div>
+
+      <div class="offline-note">💡 No API key or Picsart out of credits? The app automatically falls back to a <strong>free offline upscaler</strong> — no payment needed.</div>
+
+      <div class="alert" id="alert" role="alert"></div>
+      <div class="spinner-wrap" id="spinner">
+        <div class="spinner"></div>
+        <div class="spinner-text" id="spinnerText">Upscaling your image… this usually takes a few seconds.</div>
+      </div>
+    </section>
+
+    <!-- Step 2: Results -->
+    <section class="card" id="resultCard" style="display:none;">
+      <div class="card-title"><span class="step">2</span> Comparison</div>
+
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-pill">📐 Original: <span class="stat-val" id="statOrigSize">—</span></div>
+        <div class="stat-pill">⬆️ Enhanced: <span class="stat-val" id="statEnhSize">—</span></div>
+        <div class="stat-pill">🔢 Factor: <span class="stat-val" id="statFactor">—</span></div>
+        <div class="stat-pill">⚡ Mode: <span class="stat-val" id="statMode">—</span></div>
+      </div>
+
+      <div class="view-tabs">
+        <button class="view-tab active" data-view="sidebyside">Side by Side</button>
+        <button class="view-tab" data-view="slider">Before/After Slider</button>
+      </div>
+
+      <!-- Side-by-side -->
+      <div id="sidebysideView">
+        <div class="result-grid" id="resultGrid">
+          <div class="result-card">
+            <div class="rc-head">
+              <span>Original</span>
+              <div class="rc-head-actions"><span class="badge original">Input</span></div>
+            </div>
+            <div class="image-box">
+              <div class="placeholder" id="origPlaceholder">
+                <div class="pl-icon">📤</div>
+                <div class="pl-text">Upload Image</div>
+                <div class="pl-sub">The original image will appear here</div>
+              </div>
+              <img id="origImg" alt="Original image" />
+            </div>
+            <div class="rc-foot"><div class="meta" id="origMeta">—</div></div>
+          </div>
+
+          <div class="result-card">
+            <div class="rc-head">
+              <span>Enhanced</span>
+              <div class="rc-head-actions">
+                <button class="btn btn-icon" id="copyBtn" style="display:none;" title="Copy to clipboard">📋 Copy</button>
+                <span class="badge enhanced" id="enhBadge">AI Upscaled</span>
+              </div>
+            </div>
+            <div class="image-box">
+              <div class="placeholder" id="enhPlaceholder">
+                <div class="pl-icon">✨</div>
+                <div class="pl-text">Enhanced Image</div>
+                <div class="pl-sub">The upscaled result will appear here</div>
+              </div>
+              <img id="enhImg" alt="Enhanced image" />
+            </div>
+            <div class="rc-foot">
+              <div class="meta" id="enhMeta">—</div>
+              <button type="button" class="btn btn-success" id="downloadBtn">
+                <span>⬇️</span> Download Enhanced Image
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Before/After Slider -->
+      <div id="sliderView">
+        <div class="slider-container" id="sliderContainer">
+          <img id="sliderOrigImg" alt="Original" />
+          <div class="slider-enhanced-wrap" id="sliderEnhWrap">
+            <img id="sliderEnhImg" alt="Enhanced" />
+          </div>
+          <div class="slider-line" id="sliderLine"></div>
+          <div class="slider-handle" id="sliderHandle">↔️</div>
+        </div>
+        <div class="slider-labels">
+          <span>◀ Original</span>
+          <span>Enhanced ▶</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-foot">
+      Powered by the <a href="https://picsart.io/developers" target="_blank" rel="noopener">Picsart API</a> · Images are processed server-side and never stored on this device.
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    "use strict";
+
+    /* ============================================================
+       CONFIG — optionally set your Picsart API key here.
+       Get a free key at: https://picsart.io/developers
+       ============================================================ */
+    const DEFAULT_API_KEY  = "";
+    const UPSCALE_ENDPOINT = "https://api.picsart.io/tools/1.0/upscale";
+    const MAX_FILE_SIZE_MB = 10;
+    const ALLOWED_TYPES    = ["image/jpeg","image/png","image/webp","image/gif","image/bmp","image/tiff"];
+
+    /* ---- DOM ---- */
+    const $ = id => document.getElementById(id);
+    const dropzone    = $("dropzone"),   dzEmpty      = $("dzEmpty"),
+          filePreview = $("filePreview"),fileInput    = $("fileInput"),
+          previewThumb= $("previewThumb"),fileNameEl  = $("fileName"),
+          fileMetaEl  = $("fileMeta"),   changeBtn    = $("changeBtn"),
+          apiKeyInput = $("apiKey"),     keyToggle    = $("keyToggle"),
+          factorSel   = $("factor"),     enhanceBtn   = $("enhanceBtn"),
+          alertEl     = $("alert"),      spinnerEl    = $("spinner"),
+          spinnerText = $("spinnerText"),resultCard   = $("resultCard"),
+          resultGrid  = $("resultGrid"), origImg      = $("origImg"),
+          enhImg      = $("enhImg"),     origPlace    = $("origPlaceholder"),
+          enhPlace    = $("enhPlaceholder"), origMeta = $("origMeta"),
+          enhMeta     = $("enhMeta"),    downloadBtn  = $("downloadBtn"),
+          enhBadge    = $("enhBadge"),   copyBtn      = $("copyBtn"),
+          statsBar    = $("statsBar"),   themeBtn     = $("themeBtn"),
+          toast       = $("toast");
+
+    if (DEFAULT_API_KEY) apiKeyInput.value = DEFAULT_API_KEY;
+
+    /* ---- Theme ---- */
+    const html = document.documentElement;
+    const savedTheme = localStorage.getItem("theme") || "light";
+    html.setAttribute("data-theme", savedTheme);
+    themeBtn.textContent = savedTheme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+    themeBtn.addEventListener("click", () => {
+      const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+      themeBtn.textContent = next === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+    });
+
+    /* ---- Key toggle ---- */
+    keyToggle.addEventListener("click", () => {
+      const isPass = apiKeyInput.type === "password";
+      apiKeyInput.type = isPass ? "text" : "password";
+      keyToggle.textContent = isPass ? "🙈" : "👁️";
+    });
+
+    /* ---- State ---- */
+    let currentFile = null, origWidth = 0, origHeight = 0,
+        enhUrl = null, enhName = "", isProcessing = false;
+
+    /* ---- Helpers ---- */
+    const showAlert = (type, msg) => { alertEl.className = "alert show " + type; alertEl.textContent = msg; };
+    const hideAlert = () => { alertEl.className = "alert"; };
+    const showSpinner = (msg) => { spinnerText.textContent = msg || "Upscaling…"; spinnerEl.classList.add("show"); };
+    const hideSpinner = () => spinnerEl.classList.remove("show");
+    const showDownloadBtn = () => downloadBtn.classList.add("show");
+    const hideDownloadBtn = () => downloadBtn.classList.remove("show");
+    const formatBytes = b => b >= 1048576 ? (b/1048576).toFixed(2) + " MB" : (b/1024).toFixed(1) + " KB";
+    const showToast = msg => {
+      toast.textContent = msg; toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    };
+
+    /* ---- View tabs ---- */
+    document.querySelectorAll(".view-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".view-tab").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (btn.dataset.view === "slider") {
+          $("sidebysideView").style.display = "none";
+          $("sliderView").classList.add("show");
+          syncSlider();
+        } else {
+          $("sidebysideView").style.display = "block";
+          $("sliderView").classList.remove("show");
+        }
+      });
+    });
+    const syncSlider = () => {
+      if (origImg.src) $("sliderOrigImg").src = origImg.src;
+      if (enhImg.src)  $("sliderEnhImg").src  = enhImg.src;
+    };
+
+    /* ---- Before/After Slider drag ---- */
+    const sliderContainer = $("sliderContainer"),
+          sliderEnhWrap   = $("sliderEnhWrap"),
+          sliderLine      = $("sliderLine"),
+          sliderHandle    = $("sliderHandle");
+    let isDragging = false;
+
+    const setSliderPos = clientX => {
+      const rect = sliderContainer.getBoundingClientRect();
+      const pct  = Math.max(0.02, Math.min(0.98, (clientX - rect.left) / rect.width));
+      const s    = (pct * 100).toFixed(1) + "%";
+      sliderEnhWrap.style.width = s;
+      sliderLine.style.left     = s;
+      sliderHandle.style.left   = s;
+    };
+    sliderContainer.addEventListener("mousedown",  e => { isDragging = true; setSliderPos(e.clientX); });
+    document.addEventListener("mousemove",  e => { if (isDragging) setSliderPos(e.clientX); });
+    document.addEventListener("mouseup",   () => { isDragging = false; });
+    sliderContainer.addEventListener("touchstart", e => { isDragging = true; setSliderPos(e.touches[0].clientX); }, { passive: true });
+    document.addEventListener("touchmove", e => { if (isDragging) setSliderPos(e.touches[0].clientX); }, { passive: true });
+    document.addEventListener("touchend",  () => { isDragging = false; });
+
+    /* ---- Sample presets ---- */
+    document.querySelectorAll(".sample-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        try {
+          showToast("Loading sample…");
+          const res  = await fetch(btn.dataset.url);
+          const blob = await res.blob();
+          handleFile(new File([blob], btn.dataset.name, { type: blob.type }));
+        } catch { showAlert("error", "Could not load the sample image. Check your internet connection."); }
+      });
+    });
+
+    /* ---- Clipboard paste ---- */
+    document.addEventListener("paste", e => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.kind === "file" && item.type.startsWith("image/")) {
+          const f = item.getAsFile();
+          if (f) { handleFile(f); showToast("Image pasted!"); }
+          break;
+        }
+      }
+    });
+
+    /* ---- File selection ---- */
+    dropzone.addEventListener("click",  () => fileInput.click());
+    changeBtn.addEventListener("click", e => { e.stopPropagation(); fileInput.click(); });
+    fileInput.addEventListener("change", e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); });
+    ["dragenter","dragover"].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add("dragover"); }));
+    ["dragleave","drop"].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove("dragover"); }));
+    dropzone.addEventListener("drop", e => { if (e.dataTransfer?.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+    function handleFile(file) {
+      hideAlert();
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        showAlert("error", "Unsupported file type. Please upload JPG, PNG, WEBP, GIF, BMP, or TIFF.");
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_MB * 1048576) {
+        showAlert("error", "File too large (max " + MAX_FILE_SIZE_MB + " MB).");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onerror = () => showAlert("error", "Could not read the file. Try another image.");
+      reader.onload = e => {
+        currentFile = file;
+        enhanceBtn.disabled = false;
+        hideDownloadBtn();
+        resultCard.style.display = "none";
+        statsBar.classList.remove("show");
+        enhImg.removeAttribute("src"); enhImg.classList.remove("loaded");
+        enhPlace.style.display = "flex"; copyBtn.style.display = "none";
+        dzEmpty.style.display = "none"; filePreview.classList.add("show");
+        previewThumb.src = e.target.result;
+        fileNameEl.textContent = file.name;
+        fileMetaEl.textContent = formatBytes(file.size) + " · " + (file.type.replace("image/","").toUpperCase() || "Image");
+        origImg.onload = () => {
+          origImg.classList.add("loaded"); origPlace.style.display = "none";
+          origWidth = origImg.naturalWidth; origHeight = origImg.naturalHeight;
+          resultGrid.style.setProperty("--ar", origWidth + " / " + origHeight);
+          origMeta.textContent = origWidth + " × " + origHeight + " px · " + formatBytes(file.size);
+          enhMeta.textContent = "Waiting for enhancement…";
+        };
+        origImg.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /* ---- Copy to clipboard ---- */
+    copyBtn.addEventListener("click", async () => {
+      if (!enhUrl) return;
+      try {
+        const blob = await fetchEnhancedBlob(enhUrl);
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        showToast("✅ Copied to clipboard!");
+      } catch { showToast("❌ Copy not supported in this browser."); }
+    });
+
+    /* ---- Enhance ---- */
+    enhanceBtn.addEventListener("click", enhanceImage);
+
+    async function enhanceImage() {
+      if (isProcessing || !currentFile) {
+        if (!currentFile) showAlert("error", "Please select an image first.");
+        return;
+      }
+      const apiKey = sanitizeKey(apiKeyInput.value);
+      const hasKey = !!(apiKey && apiKey !== "[Your API Key Here]");
+      let mode = "local", note = "";
+
+      isProcessing = true;
+      hideAlert(); hideDownloadBtn();
+      showSpinner("Upscaling your image… this usually takes a few seconds.");
+      enhanceBtn.disabled = true;
+      enhImg.classList.remove("loaded"); enhPlace.style.display = "flex";
+      enhMeta.textContent = "Processing…"; copyBtn.style.display = "none";
+
+      try {
+        let url = null, outW = 0, outH = 0;
+
+        if (hasKey) {
+          try {
+            const fd = new FormData();
+            fd.append("image", currentFile);
+            fd.append("upscale_factor", factorSel.value);
+            fd.append("format", "PNG");
+            const api = await upscaleWithPicsart(fd, apiKey);
+            url = api.url; mode = "ai";
+          } catch (err) {
+            const msg = friendlyError(err);
+            note = /402|payment/i.test(msg)
+              ? "Picsart requires payment (HTTP 402). Used the free offline upscaler instead."
+              : "Picsart failed — " + msg + " Used the free offline upscaler instead.";
+          }
+        } else {
+          note = "No API key provided — used the free offline upscaler.";
+        }
+
+        if (!url) {
+          showSpinner("Running offline upscaler…");
+          const loc = await localUpscale(currentFile, parseInt(factorSel.value,10) || 2);
+          url = loc.url; outW = loc.width; outH = loc.height; mode = "local";
+        }
+
+        enhUrl  = url;
+        enhName = buildDownloadName(currentFile.name);
+
+        enhImg.onload = () => {
+          enhImg.classList.add("loaded"); enhPlace.style.display = "none";
+          const rw = outW || enhImg.naturalWidth  || origWidth;
+          const rh = outH || enhImg.naturalHeight || origHeight;
+          enhBadge.textContent  = mode === "ai" ? "AI Upscaled" : "Offline Upscale";
+          enhMeta.textContent   = rw + " × " + rh + " px · " + (mode === "ai" ? "Picsart AI" : "Offline canvas") + " · ready to download";
+          $("statOrigSize").textContent = origWidth + " × " + origHeight + " px";
+          $("statEnhSize").textContent  = rw + " × " + rh + " px";
+          $("statFactor").textContent   = factorSel.value + "×";
+          $("statMode").textContent     = mode === "ai" ? "Picsart AI" : "Offline Canvas";
+          statsBar.classList.add("show");
+          resultCard.style.display = "block";
+          showDownloadBtn(); copyBtn.style.display = "inline-flex";
+          syncSlider(); hideSpinner();
+          isProcessing = false; enhanceBtn.disabled = false;
+          resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+          showAlert("info", note || "Enhancement complete! Your upscaled image is ready.");
+        };
+        enhImg.onerror = () => {
+          hideSpinner(); isProcessing = false; enhanceBtn.disabled = false;
+          showAlert("error", "Image generated but could not be displayed. Please try again.");
+        };
+        enhImg.src = url;
+      } catch (err) {
+        hideSpinner(); isProcessing = false; enhanceBtn.disabled = false;
+        enhMeta.textContent = "—";
+        showAlert("error", authHint(friendlyError(err)));
+      }
+    }
+
+    async function upscaleWithPicsart(formData, apiKey) {
+      const strategies = [
+        { headers: { "X-Picsart-API-Key": apiKey } },
+        { headers: { "Authorization": "Bearer " + apiKey } }
+      ];
+      let lastError = "";
+      for (const s of strategies) {
+        const res  = await fetch(UPSCALE_ENDPOINT, { method: "POST", headers: s.headers, body: formData });
+        const json = await res.json().catch(() => null);
+        if (res.ok) {
+          const url = json?.data?.url;
+          if (!url) throw new Error("API returned no image URL.");
+          return { url, width: 0, height: 0 };
+        }
+        lastError = extractApiError(json, res.status);
+        if (res.status !== 401 && res.status !== 403 && !/token|author|apikey|api key|unauth|credential/i.test(lastError)) break;
+      }
+      throw new Error(lastError || "Request failed. Please try again.");
+    }
+
+    function extractApiError(json, status) {
+      let msg = (json && (json.message || json.detail || (json.error && (json.error.message || json.error.detail)))) || "";
+      if (!msg) {
+        const map = { 400:"Bad request.",401:"Authentication failed.",403:"Access denied.",429:"Rate limit reached.",500:"Picsart server error." };
+        msg = map[status] || "Request failed (HTTP " + status + ").";
+      }
+      return msg + " (HTTP " + status + ")";
+    }
+
+    const sanitizeKey = raw => (raw || "").replace(/^["'\s]+|["'\s]+$/g, "");
+
+    function authHint(msg) {
+      if (/token|author|apikey|api key|unauth|credential|401|403/i.test(msg))
+        return msg + " Make sure you pasted your Picsart API Key (not an OAuth token). Keys are issued at https://picsart.io/developers.";
+      return msg;
+    }
+
+    function friendlyError(err) {
+      if (err instanceof TypeError && /fetch/i.test(err.message))
+        return "Network error — could not reach the Picsart API. Check your connection.";
+      return err.message || "Something went wrong. Please try again.";
+    }
+
+    /* ---- Download ---- */
+    downloadBtn.addEventListener("click", async () => {
+      if (!enhUrl) { showAlert("error", "Nothing to download yet."); return; }
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> Preparing…';
+      try {
+        const blob = await fetchEnhancedBlob(enhUrl);
+        const url  = URL.createObjectURL(blob);
+        const a    = Object.assign(document.createElement("a"), { href: url, download: enhName });
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        showAlert("info", "Download started!");
+      } catch (err) {
+        showAlert("error", "Download failed: " + err.message);
+      } finally {
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = "<span>⬇️</span> Download Enhanced Image";
+      }
+    });
+
+    async function fetchEnhancedBlob(url) {
+      try {
+        const res = await fetch(url, { mode: "cors" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return await res.blob();
+      } catch { return canvasToBlob(); }
+    }
+
+    function canvasToBlob() {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          try {
+            const c = document.createElement("canvas");
+            c.width = img.naturalWidth; c.height = img.naturalHeight;
+            c.getContext("2d").drawImage(img, 0, 0);
+            c.toBlob(b => b ? resolve(b) : reject(new Error("Canvas export failed.")), "image/png");
+          } catch (e) { reject(e); }
+        };
+        img.onerror = () => reject(new Error("Could not access the image."));
+        img.src = enhUrl;
+      });
+    }
+
+    enhImg.crossOrigin = "anonymous";
+    const buildDownloadName = name => (name.replace(/\.[^.]+$/, "") || "enhanced") + "-enhanced.png";
+
+    /* ---- Offline upscaler ---- */
+    async function localUpscale(file, factor) {
+      const img = await loadImg(file);
+      let w = img.naturalWidth * factor, h = img.naturalHeight * factor;
+      const CAP = 4800, scale = Math.min(CAP / w, CAP / h);
+      if (scale < 1) { w = Math.round(w * scale); h = Math.round(h * scale); }
+      let src = document.createElement("canvas");
+      src.width = img.naturalWidth; src.height = img.naturalHeight;
+      src.getContext("2d").drawImage(img, 0, 0);
+      while (src.width < w || src.height < h) {
+        const nx = document.createElement("canvas");
+        nx.width = Math.min(w, src.width * 2); nx.height = Math.min(h, src.height * 2);
+        const ctx = nx.getContext("2d");
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(src, 0, 0, nx.width, nx.height);
+        src = nx;
+      }
+      const blob = await new Promise((res, rej) => src.toBlob(b => b ? res(b) : rej(new Error("Export failed.")), "image/png"));
+      return { url: URL.createObjectURL(blob), width: w, height: h };
+    }
+
+    function loadImg(file) {
+      return new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => res(img);
+        img.onerror = () => rej(new Error("Could not read image."));
+        img.src = URL.createObjectURL(file);
+      });
+    }
+  </script>
+</body>
+</html>
